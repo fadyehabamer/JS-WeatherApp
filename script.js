@@ -13,6 +13,7 @@ let lastCity = null; // city name of the current search, null for geolocation lo
 
 // show a message in the status box; type is "pending", "error" or null to hide it
 const UNIT_KEY = "weatherUnit";
+const CITY_KEY = "weatherLastCity";
 let unit = "C";
 let tempsCelsius = null;
 
@@ -142,6 +143,11 @@ function weatherDetails(info) {
         wIcon.alt = description;
         weatherPart.querySelector(".location span").innerText = [city, country].filter(Boolean).join(", ") || "Unknown location";
         weatherPart.querySelector(".humidity span").innerText = `${humidity}%`;
+        if (lastCity) {
+            try {
+                localStorage.setItem(CITY_KEY, lastCity);
+            } catch (e) {}
+        }
         setStatus("", null);
         inputField.value = "";
         wrapper.classList.add("active");
@@ -152,3 +158,12 @@ arrowBack.addEventListener("click", () => {
     wrapper.classList.remove("active");
     inputField.focus();
 });
+
+let savedCity = null;
+try {
+    savedCity = localStorage.getItem(CITY_KEY);
+} catch (e) {}
+if (savedCity && savedCity.trim()) {
+    inputField.value = savedCity;
+    requestApi(savedCity.trim());
+}
