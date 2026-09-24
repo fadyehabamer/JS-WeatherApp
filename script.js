@@ -5,7 +5,7 @@ const wrapper = document.querySelector(".wrapper"),
     locationBtn = inputPart.querySelector("button"),
     weatherPart = wrapper.querySelector(".weather-part"),
     wIcon = weatherPart.querySelector("img"),
-    arrowBack = wrapper.querySelector("header i");
+    arrowBack = wrapper.querySelector("header .back-btn");
 
 let api;
 let lastCity = null; // city name of the current search, null for geolocation lookups
@@ -106,6 +106,7 @@ function weatherDetails(info) {
         //passing a particular weather info to a particular element
         weatherPart.querySelector(".temp .numb").innerText = Math.round(temp);
         weatherPart.querySelector(".weather").innerText = description;
+        wIcon.alt = description;
         weatherPart.querySelector(".location span").innerText = [city, country].filter(Boolean).join(", ") || "Unknown location";
         weatherPart.querySelector(".temp .numb-2").innerText = Math.round(feels_like);
         weatherPart.querySelector(".humidity span").innerText = `${humidity}%`;
@@ -117,4 +118,5 @@ function weatherDetails(info) {
 
 arrowBack.addEventListener("click", () => {
     wrapper.classList.remove("active");
+    inputField.focus();
 });
