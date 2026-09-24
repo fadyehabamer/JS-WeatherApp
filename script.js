@@ -8,6 +8,14 @@ const wrapper = document.querySelector(".wrapper"),
     arrowBack = wrapper.querySelector("header i");
 
 let api;
+let lastCity = null; // city name of the current search, null for geolocation lookups
+
+// show a message in the status box; type is "pending", "error" or null to hide it
+function setStatus(message, type) {
+    infoTxt.classList.remove("pending", "error");
+    if (type) infoTxt.classList.add(type);
+    infoTxt.innerText = message;
+}
 
 inputField.addEventListener("keyup", e => {
     // if user pressed enter btn and input value is not empty
@@ -26,12 +34,14 @@ locationBtn.addEventListener("click", () => {
 });
 
 function requestApi(city) {
+    lastCity = city;
     api = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=93f2fce913853464e6211aafd3aa5678
     `;
     fetchData();
 }
 
 function onSuccess(position) {
+    lastCity = null;
     const { latitude, longitude } = position.coords; // getting lat and lon of the user device from coords obj
     api = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=93f2fce913853464e6211aafd3aa5678
     `;
@@ -40,29 +50,41 @@ function onSuccess(position) {
 
 function onError(error) {
     // if any error occur while getting user location then we'll show it in infoText
-    infoTxt.innerText = error.message;
-    infoTxt.classList.add("error");
+    setStatus(error.message, "error");
+}
+
+// turn a failed API response into a message the user can act on
+function apiErrorMessage(status, body) {
+    if (status == 404) {
+        return lastCity ? `"${lastCity}" isn't a valid city name` : "No weather data found for your location";
+    }
+    if (status == 401) return "The weather service rejected the API key";
+    if (status == 429) return "Too many requests, please try again in a minute";
+    return (body && body.message) || `Weather service error (HTTP ${status})`;
 }
 
 function fetchData() {
-    infoTxt.innerText = "Getting weather details...";
-    infoTxt.classList.add("pending");
-    // getting api response and returning it with parsing into js obj and in another 
-    // then function calling weatherDetails function with passing api result as an argument
-    fetch(api).then(res => res.json()).then(result => weatherDetails(result)).catch(() => {
-        infoTxt.innerText = "Something went wrong";
-        infoTxt.classList.replace("pending", "error");
-    });
+    setStatus("Getting weather details...", "pending");
+    fetch(api)
+        .then(res => res.json().catch(() => null).then(body => {
+            if (!res.ok || !body) throw new Error(apiErrorMessage(res.status, body));
+            return body;
+        }))
+        .then(result => weatherDetails(result))
+        .catch(err => {
+            // TypeError means the request itself failed (offline, blocked, CORS)
+            const message = err instanceof TypeError ? "Could not reach the weather service, check your connection" : err.message;
+            setStatus(message, "error");
+        });
 }
 
 function weatherDetails(info) {
-    if (info.cod == "404") { // if user entered city name isn't valid
-        infoTxt.classList.replace("pending", "error");
-        infoTxt.innerText = `${inputField.value} isn't a valid city name`;
+    if (!info.weather || !info.weather.length || !info.main) {
+        setStatus("The weather service returned an unexpected response", "error");
     } else {
         //getting required properties value from the whole weather information
         const city = info.name;
-        const country = info.sys.country;
+        const country = info.sys && info.sys.country; // absent for some coordinates (e.g. at sea)
         const { description, id } = info.weather[0];
         const { temp, feels_like, humidity } = info.main;
 
@@ -84,11 +106,10 @@ function weatherDetails(info) {
         //passing a particular weather info to a particular element
         weatherPart.querySelector(".temp .numb").innerText = Math.floor(temp);
         weatherPart.querySelector(".weather").innerText = description;
-        weatherPart.querySelector(".location span").innerText = `${city}, ${country}`;
+        weatherPart.querySelector(".location span").innerText = [city, country].filter(Boolean).join(", ") || "Unknown location";
         weatherPart.querySelector(".temp .numb-2").innerText = Math.floor(feels_like);
         weatherPart.querySelector(".humidity span").innerText = `${humidity}%`;
-        infoTxt.classList.remove("pending", "error");
-        infoTxt.innerText = "";
+        setStatus("", null);
         inputField.value = "";
         wrapper.classList.add("active");
     }
