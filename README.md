@@ -13,6 +13,8 @@ Live demo: https://getweathernow.vercel.app/
 - Search by city name (press <kbd>Enter</kbd>)
 - "Get Device Location" uses the browser Geolocation API
 - Shows temperature, "feels like", humidity and a condition icon
+- °C/°F toggle (the API is always queried in metric units and converted in the browser); your choice is remembered
+- Remembers the last city you searched and loads its weather automatically on your next visit
 - Clear error messages for unknown cities, rejected API keys, rate limits and network failures
 
 ## Running locally

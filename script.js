@@ -5,12 +5,45 @@ const wrapper = document.querySelector(".wrapper"),
     locationBtn = inputPart.querySelector("button"),
     weatherPart = wrapper.querySelector(".weather-part"),
     wIcon = weatherPart.querySelector("img"),
-    arrowBack = wrapper.querySelector("header .back-btn");
+    arrowBack = wrapper.querySelector("header .back-btn"),
+    unitButtons = weatherPart.querySelectorAll(".unit-toggle button");
 
 let api;
 let lastCity = null; // city name of the current search, null for geolocation lookups
 
 // show a message in the status box; type is "pending", "error" or null to hide it
+const UNIT_KEY = "weatherUnit";
+const CITY_KEY = "weatherLastCity";
+let unit = "C";
+let tempsCelsius = null;
+
+try {
+    if (localStorage.getItem(UNIT_KEY) === "F") unit = "F";
+} catch (e) {}
+
+function formatTemp(celsius) {
+    return Math.round(unit === "F" ? celsius * 9 / 5 + 32 : celsius);
+}
+
+function renderTemps() {
+    unitButtons.forEach(btn => btn.setAttribute("aria-pressed", String(btn.dataset.unit === unit)));
+    weatherPart.querySelectorAll(".unit").forEach(el => el.innerText = unit);
+    if (!tempsCelsius) return;
+    weatherPart.querySelector(".temp .numb").innerText = formatTemp(tempsCelsius.temp);
+    weatherPart.querySelector(".temp .numb-2").innerText = formatTemp(tempsCelsius.feels_like);
+}
+
+function setUnit(newUnit) {
+    unit = newUnit;
+    try {
+        localStorage.setItem(UNIT_KEY, unit);
+    } catch (e) {}
+    renderTemps();
+}
+
+unitButtons.forEach(btn => btn.addEventListener("click", () => setUnit(btn.dataset.unit)));
+renderTemps();
+
 function setStatus(message, type) {
     infoTxt.classList.remove("pending", "error");
     if (type) infoTxt.classList.add(type);
@@ -104,12 +137,17 @@ function weatherDetails(info) {
         }
 
         //passing a particular weather info to a particular element
-        weatherPart.querySelector(".temp .numb").innerText = Math.round(temp);
+        tempsCelsius = { temp, feels_like };
+        renderTemps();
         weatherPart.querySelector(".weather").innerText = description;
         wIcon.alt = description;
         weatherPart.querySelector(".location span").innerText = [city, country].filter(Boolean).join(", ") || "Unknown location";
-        weatherPart.querySelector(".temp .numb-2").innerText = Math.round(feels_like);
         weatherPart.querySelector(".humidity span").innerText = `${humidity}%`;
+        if (lastCity) {
+            try {
+                localStorage.setItem(CITY_KEY, lastCity);
+            } catch (e) {}
+        }
         setStatus("", null);
         inputField.value = "";
         wrapper.classList.add("active");
@@ -120,3 +158,12 @@ arrowBack.addEventListener("click", () => {
     wrapper.classList.remove("active");
     inputField.focus();
 });
+
+let savedCity = null;
+try {
+    savedCity = localStorage.getItem(CITY_KEY);
+} catch (e) {}
+if (savedCity && savedCity.trim()) {
+    inputField.value = savedCity;
+    requestApi(savedCity.trim());
+}

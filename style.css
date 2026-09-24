@@ -177,6 +177,29 @@ header .back-btn {
   margin: 10px 5px 0 0;
 }
 
+.weather-part .unit-toggle {
+  display: flex;
+  gap: 6px;
+  margin: 0 0 10px;
+}
+
+.unit-toggle button {
+  min-width: 48px;
+  padding: 4px 10px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #74BCE2;
+  background: #fff;
+  border: 1px solid #74BCE2;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.unit-toggle button[aria-pressed="true"] {
+  color: #fff;
+  background: #74BCE2;
+}
+
 .weather-part .weather {
   font-size: 21px;
   text-align: center;

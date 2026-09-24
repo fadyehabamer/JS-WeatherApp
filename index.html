@@ -26,7 +26,11 @@
       <img src="" alt="Weather Icon">
       <div class="temp">
         <span class="numb">_</span>
-        <span class="deg">°</span>C
+        <span class="deg">°</span><span class="unit">C</span>
+      </div>
+      <div class="unit-toggle" role="group" aria-label="Temperature unit">
+        <button type="button" data-unit="C" aria-pressed="true">°C</button>
+        <button type="button" data-unit="F" aria-pressed="false">°F</button>
       </div>
       <div class="weather">_ _</div>
       <div class="location">
@@ -39,7 +43,7 @@
           <div class="details">
             <div class="temp">
               <span class="numb-2">_</span>
-              <span class="deg">°</span>C
+              <span class="deg">°</span><span class="unit">C</span>
             </div>
             <p>Feels like</p>
           </div>
