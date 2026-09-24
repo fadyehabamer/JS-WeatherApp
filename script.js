@@ -11,8 +11,9 @@ let api;
 
 inputField.addEventListener("keyup", e => {
     // if user pressed enter btn and input value is not empty
-    if (e.key == "Enter" && inputField.value != "") {
-        requestApi(inputField.value);
+    const city = inputField.value.trim();
+    if (e.key == "Enter" && city != "") {
+        requestApi(city);
     }
 });
 
@@ -25,7 +26,7 @@ locationBtn.addEventListener("click", () => {
 });
 
 function requestApi(city) {
-    api = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=93f2fce913853464e6211aafd3aa5678
+    api = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=93f2fce913853464e6211aafd3aa5678
     `;
     fetchData();
 }
