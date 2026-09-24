@@ -104,10 +104,10 @@ function weatherDetails(info) {
         }
 
         //passing a particular weather info to a particular element
-        weatherPart.querySelector(".temp .numb").innerText = Math.floor(temp);
+        weatherPart.querySelector(".temp .numb").innerText = Math.round(temp);
         weatherPart.querySelector(".weather").innerText = description;
         weatherPart.querySelector(".location span").innerText = [city, country].filter(Boolean).join(", ") || "Unknown location";
-        weatherPart.querySelector(".temp .numb-2").innerText = Math.floor(feels_like);
+        weatherPart.querySelector(".temp .numb-2").innerText = Math.round(feels_like);
         weatherPart.querySelector(".humidity span").innerText = `${humidity}%`;
         setStatus("", null);
         inputField.value = "";
